@@ -1,0 +1,107 @@
+﻿@page "/applications"
+@using Azure.Storage.Blobs
+@using Microsoft.AspNetCore.Authorization
+@using SampleApp.Shared
+
+@attribute [Authorize]
+@inject HttpClient Http
+@inject NotificationsManager Notifications
+@implements IDisposable
+
+<div class="col-6">
+    <div class="row">
+        <p>Upload a CSV file:</p>
+        <InputFile OnChange="UploadAsync" />
+
+        <p>Status: @_status</p>
+    </div>
+</div>
+<button class="btn btn-primary" @onclick="ShowPreview">Show preview</button>
+<button class="btn btn-primary" @onclick="TriggerPipelineAsync">Trigger pipeline</button>
+<button class="btn btn-primary" @onclick="ShowDashboard">Show dashboard</button>
+
+@if (_dashboardVisible)
+{
+    <div class="col-6">
+        <Dashboard />
+    </div>
+}
+
+@if (_previewVisible)
+{
+    <div class="col-6">
+        <Preview File="@_file" />
+    </div>
+}
+
+@code {
+    private const long MAX_SIZE = 1024 * 1024 * 1024;
+
+    private string _status = string.Empty;
+
+    private bool _previewVisible = false;
+    private bool _dashboardVisible = false;
+
+    private DataFile _file = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.Notifications.NotificationReceivedAsync += UpdateStatusAsync;
+    }
+
+    private async Task UpdateStatusAsync(string message)
+    {
+        _status = message;
+
+        this.StateHasChanged();
+    }
+
+    private void ShowPreview()
+    {
+        this._dashboardVisible = false;
+        this._previewVisible = true;
+    }
+    
+    private void ShowDashboard()
+    {
+        this._dashboardVisible = true;
+        this._previewVisible = false;
+    }
+
+    private async Task UploadAsync(InputFileChangeEventArgs e)
+    {
+        var extension = Path.GetExtension(e.File.Name);
+
+        string fileName = Path.ChangeExtension($"players_{Guid.NewGuid()}", extension);
+
+        var response = await this.Http.PostAsync("/api/datafiles", content:null);
+
+        response.EnsureSuccessStatusCode();
+
+        await UpdateStatusAsync("Upload in progress...");
+
+        _file = await response.Content.ReadFromJsonAsync<DataFile>();
+
+        var blob = new BlobClient(new Uri(_file.Url));
+
+        await blob.UploadAsync(e.File.OpenReadStream(maxAllowedSize: MAX_SIZE));
+
+        await UpdateStatusAsync("Upload completed!");
+    }
+
+    private async Task TriggerPipelineAsync()
+    {
+        await UpdateStatusAsync("Triggering pipeline...");
+
+        var response = await this.Http.PatchAsync($"/api/datafiles/{_file.Id}", null);
+
+        response.EnsureSuccessStatusCode();
+
+        await UpdateStatusAsync("Pipeline triggered");
+    }
+
+    public void Dispose()
+    {
+        this.Notifications.NotificationReceivedAsync -= UpdateStatusAsync;
+    }
+}

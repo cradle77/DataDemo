@@ -1,0 +1,42 @@
+﻿@using SampleApp.Shared
+@inject HttpClient Http
+@inject IJSRuntime Js
+
+@if (!_showReport)
+{
+    <p>PowerBI is loading...</p>
+}
+else
+{
+    <div @ref="@_powerBIElement" style="height: 541.25px; width: 1140px;"></div>
+
+    @*<iframe title="dashboard" width="1140" height="541.25"
+        src="@_embedUrl"
+        frameborder="0" allowFullScreen="true">
+    </iframe>*@
+}
+
+@code {
+    private string _embedUrl;
+
+    private bool _showReport;
+    private ElementReference _powerBIElement;
+
+    private string _accessToken = null;
+
+    protected async override Task OnInitializedAsync()
+    {
+        //_embedUrl = "https://app.powerbi.com/reportEmbed?reportId=99872c3d-cf61-4faa-9788-e82707d7bf54&autoAuth=true&ctid=5098299b-d279-42d9-bd68-9270dc9f7d5b";
+
+        var result = await this.Http.GetFromJsonAsync<PowerBiReportEmbedDetails>("/api/PowerBI/accessToken");
+
+        _showReport = true;
+        
+        this.StateHasChanged();
+        
+        await this.Js.InvokeAsync<object>(
+                "ShowMyPowerBI.showReport",
+                _powerBIElement, result.EmbedToken.Token, result.EmbedUrl,
+                result.Id);
+    }
+}

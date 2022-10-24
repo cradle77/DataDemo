@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>SampleApp.Server-493020f3-efd6-433a-9524-20868b278c15</UserSecretsId>
+		<WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Azure.Analytics.Synapse.Artifacts" Version="1.0.0-preview.16" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.9" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.13.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.9" NoWarn="NU1605" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.9" NoWarn="NU1605" />
+		<PackageReference Include="Microsoft.Azure.Management.DataFactory" Version="6.4.0" />
+		<PackageReference Include="Microsoft.Azure.Management.Synapse" Version="2.0.0" />
+		<PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.2" />
+		<PackageReference Include="Microsoft.Identity.Web" Version="1.16.0" />
+		<PackageReference Include="Microsoft.Identity.Web.UI" Version="1.16.0" />
+		<PackageReference Include="Microsoft.PowerBI.Api" Version="4.10.0" />
+		<PackageReference Include="Dapper" Version="2.0.123" />
+		<PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Client\SampleApp.Client.csproj" />
+	  <ProjectReference Include="..\Shared\SampleApp.Shared.csproj" />
+	</ItemGroup>
+
+</Project>
+

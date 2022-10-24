@@ -1,0 +1,59 @@
+﻿@using SampleApp.Shared
+@using System.Dynamic
+@inject HttpClient Http
+
+@if (_gridVisible)
+{ 
+    <table>
+        <thead>
+            @foreach (var column in _headers)
+            {
+                <th>@column</th>
+            }
+        </thead>
+        <tbody>
+            @foreach (var row in _data)
+            {
+                <tr>
+                    @foreach (var column in _headers)
+                    {
+                        <td>@row[column]</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No data</p>
+}
+
+
+@code {
+    [Parameter]
+    public DataFile File { get; set; }
+
+    private List<IDictionary<string, object>> _data = null;
+
+    private List<string> _headers = null;
+
+    private bool _gridVisible = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _gridVisible = false;
+
+        if (this.File != null)
+        {
+            _data = await this.Http.GetFromJsonAsync<List<IDictionary<string, object>>>($"/api/datafiles/{this.File.Id}/preview");
+
+            if (_data != null & _data.Count > 0)
+            { 
+                _headers = _data.First().Keys.ToList();
+
+                _gridVisible = true;
+            }
+        }
+    }
+}
